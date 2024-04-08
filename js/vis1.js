@@ -21,6 +21,8 @@ let volume = null;
 let fileInput = null;
 let testShader = null;
 
+let myShader = null;
+
 /**
  * Load all data and initialize UI here.
  */
@@ -41,6 +43,10 @@ function init() {
 
     // dummy shader gets a color as input
     testShader = new TestShader([255.0, 255.0, 0.0]);
+
+    // new stuff
+    boundDim = THREE.Vector3(volume.width, volume.height, volume.depth);
+    myShader = new myShader(THREE.Data3DTexture(volume), camera.position, boundDim);
 }
 
 /**
