@@ -45,8 +45,10 @@ function init() {
     testShader = new TestShader([255.0, 255.0, 0.0]);
 
     // new stuff
-    boundDim = THREE.Vector3(volume.width, volume.height, volume.depth);
-    myShader = new myShader(THREE.Data3DTexture(volume), camera.position, boundDim);
+    if(volume != null){
+      boundDim = new THREE.Vector3(volume.width, volume.height, volume.depth);
+      myShader = new myShader(THREE.Data3DTexture(volume), camera.position, boundDim);
+    }
 }
 
 /**
