@@ -4,6 +4,5 @@ class MyShader extends Shader{
         this.setUniform("cameraPos", cameraPos);
         this.setUniform("boundBox", boundDim);
         this.setUniform("volume", material);
-        this.setUniform("resolution", new THREE.Vector2(width, height));
     }
 }
