@@ -1,0 +1,7 @@
+#ifndef GL_ES
+#version 330 es
+#endif
+
+void main() {
+    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(position, 1);
+}

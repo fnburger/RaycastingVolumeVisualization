@@ -1,0 +1,15 @@
+#ifndef GL_ES
+#version 330 es
+#endif
+
+precision highp int;
+precision highp float;
+
+uniform vec3 color[2];
+uniform int colorIdx;
+
+out vec4 fragColor;
+
+void main() {
+    fragColor = vec4(color[colorIdx], 1.0);
+}

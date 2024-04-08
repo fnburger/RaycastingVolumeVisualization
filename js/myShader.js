@@ -1,6 +1,6 @@
 class TestShader extends Shader{
     constructor(material, cameraPos, boundDim){
-        super("color_vert", "color_frag");
+        super("my_vert", "my_frag");
         // setUniform
     }
 }
