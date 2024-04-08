@@ -12,4 +12,13 @@ out vec4 fragColor;
 
 void main() {
     fragColor = vec4(color[colorIdx], 1.0);
+
+    /*
+      TODO: Slab method
+    */
+}
+
+bool intersection(box b, ray r) {
+  double tmin = -INFINITY, tmax = INFINITY;
+
 }
