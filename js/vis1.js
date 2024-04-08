@@ -74,7 +74,7 @@ async function resetVis(){
     // new stuff
     if(volume != null){
         boundDim = new THREE.Vector3(volume.width, volume.height, volume.depth);
-        myShader = new MyShader(new THREE.Data3DTexture(volume), camera.position, boundDim);
+        myShader = new MyShader(new THREE.Data3DTexture(volume), camera.position, boundDim, canvasWidth, canvasHeight);
     }
 
     // dummy scene: we render a box and attach our color test shader as material
