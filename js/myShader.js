@@ -1,9 +1,9 @@
-class TestShader extends Shader{
-    constructor(material, cameraPos, boundDim){
+class MyShader extends Shader{
+    constructor(material, cameraPos, boundDim, width, height){
         super("my_vert", "my_frag");
-        // setUniform
         this.setUniform("cameraPos", cameraPos);
         this.setUniform("boundBox", boundDim);
         this.setUniform("volume", material);
+        this.setUniform("resolution", new THREE.Vector2(width, height));
     }
 }

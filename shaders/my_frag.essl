@@ -4,21 +4,28 @@
 
 precision highp int;
 precision highp float;
+precision highp sampler3D;
 
-uniform vec3 color[2];
-uniform int colorIdx;
+//uniform vec3 color[2];
+//uniform int colorIdx;
+
+uniform vec3 cameraPos;
+uniform vec3 boundBox;
+uniform sampler3D volume;
+uniform vec2 resolution;
 
 out vec4 fragColor;
 
 void main() {
-    fragColor = vec4(color[colorIdx], 1.0);
+    vec2 fragCoord = gl_FragCoord.xy / resolution;
+    fragColor = vec4(fragCoord, 0.0, 1.0);
 
     /*
       TODO: Slab method
     */
 }
 
-bool intersection(box b, ray r) {
+/*bool intersection(box b, ray r) {
   double tmin = -INFINITY, tmax = INFINITY;
 
-}
+}*/

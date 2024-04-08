@@ -43,12 +43,6 @@ function init() {
 
     // dummy shader gets a color as input
     testShader = new TestShader([255.0, 255.0, 0.0]);
-
-    // new stuff
-    if(volume != null){
-      boundDim = new THREE.Vector3(volume.width, volume.height, volume.depth);
-      myShader = new myShader(THREE.Data3DTexture(volume), camera.position, boundDim);
-    }
 }
 
 /**
@@ -77,10 +71,16 @@ async function resetVis(){
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera( 75, canvasWidth / canvasHeight, 0.1, 1000 );
 
+    // new stuff
+    if(volume != null){
+        boundDim = new THREE.Vector3(volume.width, volume.height, volume.depth);
+        myShader = new MyShader(new THREE.Data3DTexture(volume), camera.position, boundDim, canvasWidth, canvasHeight);
+    }
+
     // dummy scene: we render a box and attach our color test shader as material
     const testCube = new THREE.BoxGeometry(volume.width, volume.height, volume.depth);
-    const testMaterial = testShader.material;
-    await testShader.load(); // this function needs to be called explicitly, and only works within an async function!
+    const testMaterial = myShader.material;
+    await myShader.load(); // this function needs to be called explicitly, and only works within an async function!
     const testMesh = new THREE.Mesh(testCube, testMaterial);
     scene.add(testMesh);
 

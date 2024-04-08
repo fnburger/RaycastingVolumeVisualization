@@ -18,17 +18,12 @@
 
 precision highp int;
 precision highp float;
-precision highp sampler3D;
 
-//uniform vec3 color[2];
-//uniform int colorIdx;
-
-uniform vec3 cameraPos;
-uniform vec3 boundBox;
-uniform sampler3D volume;
+uniform vec3 color[2];
+uniform int colorIdx;
 
 out vec4 fragColor;
 
 void main() {
-    fragColor = vec4(1.0, 1.0, 1.0, 1.0);
+    fragColor = vec4(color[colorIdx], 1.0);
 }
