@@ -42,7 +42,7 @@ function init() {
     fileInput.addEventListener('change', readFile);
 
     // dummy shader gets a color as input
-    testShader = new TestShader([255.0, 255.0, 0.0]);
+    //testShader = new TestShader([255.0, 255.0, 0.0]);
 }
 
 /**
@@ -83,7 +83,7 @@ async function resetVis(){
     await myShader.load(); // this function needs to be called explicitly, and only works within an async function!
     const testMesh = new THREE.Mesh(testCube, testMaterial);
     scene.add(testMesh);
-
+    
     // our camera orbits around an object centered at (0,0,0)
     orbitCamera = new OrbitCamera(camera, new THREE.Vector3(0,0,0), 2*volume.max, renderer.domElement);
 

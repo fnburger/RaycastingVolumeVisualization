@@ -46,17 +46,23 @@ void main() {
 
     // Idee 1: simple Vektordifferenz
     vec3 rayOrigin = cameraPos;
+    // direction of the ray is position of fragment - rayOrigin
     vec3 rayDirection = gl_FragCoord.xyz - rayOrigin;
 
+
+
     // Idee 2: normalisierte Variante
+    // normalize rayOrigin
+    vec3 rayOriginNorm = normalize(cameraPos);
     // Get the coordinates of the current pixel
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     // Calculate the direction of the ray from the camera position to the current pixel
-    vec3 rayDirectionNorm = normalize(vec3(uv - rayOrigin.xy, 1.0));
+    vec3 rayDirectionNorm = normalize(vec3(uv - rayOriginNorm.xy, 1.0));
 
     
+    
     // Slab method
-    if(intersectsBox(rayDirectionNorm, rayOrigin, boundBox)){
+    if(intersectsBox(rayDirectionNorm, rayOriginNorm, boundBox)){
       fragColor = vec4(rayDirectionNorm, 1.0);
     } else {
       fragColor = vec4(1.0, 1.0, 1.0, 1.0);
