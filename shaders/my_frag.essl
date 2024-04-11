@@ -104,23 +104,24 @@ void main() {
     vec4 finalColor = vec4(0.0, 0.0, 0.0, 0.0);
     vec3 p = rayOriginNorm + (t_hit.x * dt) * rayDirectionNorm;
 
-    float maxOpacity = 0.0;
+    float val = 0.0;
+    float alpha;
 
     // step through the volume
     for (float t = t_hit.x; t < t_hit.y; t += dt) {
         // sample the volume at each step
-        vec3 color = sampleVolumeColor(p);
-        float opacity = sampleVolumeOpacity(p);
+        //vec3 color = texture(volume, p).rgb;
+        alpha = texture(volume, p).g;
         // MIP
-        if(opacity > maxOpacity) {
-          maxOpacity = opacity;
-          finalColor.rgb += (1.0 - finalColor.a) * opacity * color.rgb;
-          finalColor.a += (1.0 - finalColor.a) * opacity;
+        if(alpha > val) {
+          val = alpha;
+          //finalColor.rgb += (1.0 - finalColor.a) * alpha * color.rgb;
+          //finalColor.a += (1.0 - finalColor.a) * alpha;
         }
         // move sampling position along ray
-        p += rayDirectionNorm * dt;
+        p += rayDirectionNorm * t;
     }
-    fragColor = finalColor;
+    fragColor = vec4(val, val, val, 1.0);
     */
 }
 
