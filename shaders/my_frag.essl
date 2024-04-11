@@ -16,16 +16,13 @@ uniform vec2 resolution;
 
 out vec4 fragColor;
 
-// returns the inverse of the given vector
-vec3 vec3Inverse(vec3 v) {
-    return vec3(1.0 / v.x, 1.0 / v.y, 1.0 / v.z);
-}
-
 // returns true if the ray intersects the boundBox
 bool intersectsBox(vec3 ray, vec3 rayOrigin, vec3 boundBox) {
-    vec3 ray_inv = vec3Inverse(ray);
+    vec3 ray_inv = 1.0 / ray;
     vec3 boxMin = vec3(-boundBox.x/2.0, boundBox.y/2.0, -boundBox.z/2.0);
     vec3 boxMax = vec3(boundBox.x/2.0, -boundBox.y/2.0, boundBox.z/2.0);
+    //vec3 boxMin = vec3(-0.1, 0.1, -0.1);
+    //vec3 boxMax = vec3(0.1, -0.1, 0.1);
 
     float tx1 = (boxMin.x - rayOrigin.x)*ray_inv.x;
     float tx2 = (boxMax.x - rayOrigin.x)*ray_inv.x;
@@ -42,13 +39,38 @@ bool intersectsBox(vec3 ray, vec3 rayOrigin, vec3 boundBox) {
     return tmax >= tmin;
 }
 
+// returns the hit with the boundBox
+vec2 intersectBox(vec3 r0, vec3 dir) {
+    vec3 boxMin = vec3(-boundBox.x/2.0, boundBox.y/2.0, -boundBox.z/2.0);
+    vec3 boxMax = vec3(boundBox.x/2.0, -boundBox.y/2.0, boundBox.z/2.0);
+    vec3 invDir = 1.0 / dir;
+    vec3 tmin_tmp = (boxMin - r0) * invDir;
+    vec3 tmax_tmp = (boxMax - r0) * invDir;
+    vec3 tmin = min(tmin_tmp, tmax_tmp);
+    vec3 tmax = max(tmin_tmp, tmax_tmp);
+    float t0 = max(tmin.x, max(tmin.y, tmin.z));
+    float t1 = min(tmax.x, min(tmax.y, tmax.z));
+    return vec2(t0, t1);
+}
+
+// returns the color value of the volume 3D texture at the given position
+vec3 sampleVolumeColor(vec3 position) {
+    return texture(volume, position).rgb;
+}
+
+// returns the alpha value of the volume 3D texture at the given position
+float sampleVolumeOpacity(vec3 position) {
+  return texture(volume, position).a;
+}
+
 void main() {
 
     // Idee 1: simple Vektordifferenz
     vec3 rayOrigin = cameraPos;
     // direction of the ray is position of fragment - rayOrigin
     vec3 rayDirection = gl_FragCoord.xyz - rayOrigin;
-
+    // Final fragment color
+    //fragColor = vec4(rayDirectionNorm, 1.0);
 
 
     // Idee 2: normalisierte Variante
@@ -68,9 +90,37 @@ void main() {
       fragColor = vec4(1.0, 1.0, 1.0, 1.0);
     }
 
+    // TODO: idea for sampling the volume, not yet used
+    /*
+    vec2 t_hit = intersectBox(rayOriginNorm, rayDirectionNorm);
+    if(t_hit.x > t_hit.y){
+      discard; // No hit
+    }
+    //t_hit.x = max(t_hit.x, 0.0);
 
+    vec3 dt_vec = 1.0 / (vec3(boundBox) * abs(rayDirectionNorm));
+    float dt = 1.0 * min(dt_vec.x, min(dt_vec.y, dt_vec.z));
 
-    // Final fragment color
-    //fragColor = vec4(rayDirectionNorm, 1.0);
+    vec4 finalColor = vec4(0.0, 0.0, 0.0, 0.0);
+    vec3 p = rayOriginNorm + (t_hit.x * dt) * rayDirectionNorm;
+
+    float maxOpacity = 0.0;
+
+    // step through the volume
+    for (float t = t_hit.x; t < t_hit.y; t += dt) {
+        // sample the volume at each step
+        vec3 color = sampleVolumeColor(p);
+        float opacity = sampleVolumeOpacity(p);
+        // MIP
+        if(opacity > maxOpacity) {
+          maxOpacity = opacity;
+          finalColor.rgb += (1.0 - finalColor.a) * opacity * color.rgb;
+          finalColor.a += (1.0 - finalColor.a) * opacity;
+        }
+        // move sampling position along ray
+        p += rayDirectionNorm * dt;
+    }
+    fragColor = finalColor;
+    */
 }
 
