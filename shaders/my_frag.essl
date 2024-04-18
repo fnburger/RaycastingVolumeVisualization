@@ -84,13 +84,21 @@ void main() {
     // define step size for marching through volume
     vec3 dt_vec = 1.0 / (vec3(boundBox) * abs(rayDirectionNorm));
     float dt = min(dt_vec.x, min(dt_vec.y, dt_vec.z));
-
     vec4 voxelColor = vec4(0.0);
+
+    vec3 boundingBoxMin = vec3(-boundBox.x/2, -boundBox.y/2, boundBox.z/2);
+    vec3 boundingBoxMax = vec3(boundBox.x/2, boundBox.y/2, -boundBox.z/2);
 
     // Starting from the entry point, march the ray through the volume and sample it
     vec3 p = transformedEye + (t_hit.x) * rayDirectionNorm;
     for (float t = t_hit.x; t < t_hit.y; t += dt) {
-      float val = texture(volume, p).r;
+
+      // new idea
+      vec3 samplePos = gl_FragCoord.xyz + rayDirectionNorm * t;
+      vec3 texCoord = (samplePos - boundingBoxMin) / (boundingBoxMax - boundingBoxMin);
+      // end
+
+      float val = texture(volume, texCoord).r; // changed p to texCoord
       vec4 val_color = vec4(vec3(val + 0.1), 1.0);
       // MIP
       /*if (voxelColor.a < val_color.a) {
