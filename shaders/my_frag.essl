@@ -10,39 +10,19 @@ precision highp sampler3D;
 //uniform int colorIdx;
 
 uniform vec3 cameraPos;
-uniform vec3 boundBox;
+uniform ivec3 boundBox;
 uniform sampler3D volume;
 uniform vec2 resolution;
 
+in vec3 rayDirection;
+in vec3 transformedEye;
+
 out vec4 fragColor;
-
-// returns true if the ray intersects the boundBox
-bool intersectsBox(vec3 ray, vec3 rayOrigin, vec3 boundBox) {
-    vec3 ray_inv = 1.0 / ray;
-    vec3 boxMin = vec3(-boundBox.x/2.0, boundBox.y/2.0, -boundBox.z/2.0);
-    vec3 boxMax = vec3(boundBox.x/2.0, -boundBox.y/2.0, boundBox.z/2.0);
-    //vec3 boxMin = vec3(-0.1, 0.1, -0.1);
-    //vec3 boxMax = vec3(0.1, -0.1, 0.1);
-
-    float tx1 = (boxMin.x - rayOrigin.x)*ray_inv.x;
-    float tx2 = (boxMax.x - rayOrigin.x)*ray_inv.x;
-    
-    float tmin = min(tx1, tx2);
-    float tmax = max(tx1, tx2);
-
-    float ty1 = (boxMin.y - rayOrigin.y)*ray_inv.y;
-    float ty2 = (boxMax.y - rayOrigin.y)*ray_inv.y;
-
-    tmin = max(tmin, min(ty1, ty2));
-    tmax = min(tmax, max(ty1, ty2));
-
-    return tmax >= tmin;
-}
 
 // returns the hit with the boundBox
 vec2 intersectBox(vec3 r0, vec3 dir) {
-    vec3 boxMin = vec3(-boundBox.x/2.0, boundBox.y/2.0, -boundBox.z/2.0);
-    vec3 boxMax = vec3(boundBox.x/2.0, -boundBox.y/2.0, boundBox.z/2.0);
+    vec3 boxMin = vec3(-boundBox.x/2, -boundBox.y/2, boundBox.z/2);
+    vec3 boxMax = vec3(boundBox.x/2, boundBox.y/2, -boundBox.z/2);
     vec3 invDir = 1.0 / dir;
     vec3 tmin_tmp = (boxMin - r0) * invDir;
     vec3 tmax_tmp = (boxMax - r0) * invDir;
@@ -66,20 +46,22 @@ float sampleVolumeOpacity(vec3 position) {
 void main() {
 
     // Idee 1: simple Vektordifferenz
-    vec3 rayOrigin = cameraPos;
+    //vec3 rayOrigin = cameraPos;
     // direction of the ray is position of fragment - rayOrigin
-    vec3 rayDirection = gl_FragCoord.xyz - rayOrigin;
+    //vec3 rayDirection = gl_FragCoord.xyz - rayOrigin;
     // Final fragment color
     //fragColor = vec4(rayDirectionNorm, 1.0);
 
 
     // Idee 2: normalisierte Variante
     // normalize rayOrigin
-    vec3 rayOriginNorm = normalize(cameraPos);
+    //vec3 rayOriginNorm = cameraPos;
     // Get the coordinates of the current pixel
-    vec2 uv = gl_FragCoord.xy / resolution.xy;
+    //vec2 uv = ((gl_FragCoord.xy * 2.0) - resolution.xy) / resolution.y;
     // Calculate the direction of the ray from the camera position to the current pixel
-    vec3 rayDirectionNorm = normalize(vec3(uv - rayOriginNorm.xy, 1.0));
+    //vec3 rayDirectionNorm = normalize(vec3(uv - rayOriginNorm.xy, -rayOriginNorm.z));
+
+    vec3 rayDirectionNorm = normalize(rayDirection);
 
     
     
@@ -89,13 +71,10 @@ void main() {
     } else {
       fragColor = vec4(1.0, 1.0, 1.0, 1.0);
     }*/
-
-    fragColor = vec4(0.0);
-    
     
     // TODO: idea for sampling the volume
     // Intersect ray with volume
-    vec2 t_hit = intersectBox(rayOriginNorm, rayDirectionNorm);
+    vec2 t_hit = intersectBox(transformedEye, rayDirectionNorm);
     if(t_hit.x > t_hit.y){
       discard; // No hit
     }
@@ -106,17 +85,24 @@ void main() {
     vec3 dt_vec = 1.0 / (vec3(boundBox) * abs(rayDirectionNorm));
     float dt = min(dt_vec.x, min(dt_vec.y, dt_vec.z));
 
+    vec4 voxelColor = vec4(0.0);
+
     // Starting from the entry point, march the ray through the volume and sample it
-    vec3 p = rayOriginNorm + t_hit.x * rayDirectionNorm;
+    vec3 p = transformedEye + (t_hit.x) * rayDirectionNorm;
     for (float t = t_hit.x; t < t_hit.y; t += dt) {
       float val = texture(volume, p).r;
       vec4 val_color = vec4(vec3(val + 0.1), 1.0);
       // MIP
-      if (fragColor.a < val_color.a) {
-        fragColor = val_color;
+      /*if (voxelColor.a < val_color.a) {
+        voxelColor = val_color;
+      }*/
+      if (val_color.r > voxelColor.r) {
+        voxelColor = val_color;
       }
       p += rayDirectionNorm * dt;
     }
+
+    fragColor = voxelColor;
     
 }
 

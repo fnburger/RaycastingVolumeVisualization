@@ -2,6 +2,15 @@
 #version 330 es
 #endif
 
+out vec3 transformedEye;
+out vec3 rayDirection;
+
 void main() {
-    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(position, 1);
+    mat4 mvp = projectionMatrix * viewMatrix * modelMatrix;
+    mat4 pvm = modelMatrix * viewMatrix * projectionMatrix;
+
+    gl_Position = mvp * vec4(position, 1);
+
+    transformedEye = (pvm * vec4(0, 0, -1, 1)).xyz;
+    rayDirection = position - transformedEye;
 }

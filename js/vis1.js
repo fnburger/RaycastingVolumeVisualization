@@ -77,6 +77,9 @@ async function resetVis(){
         let texture3D = new THREE.Data3DTexture(volume.voxels, volume.width, volume.height, volume.depth);
         texture3D.format = THREE.RedFormat;
         texture3D.type = THREE.FloatType;
+        texture3D.minFilter = texture3D.magFilter = THREE.LinearFilter;
+        texture3D.unpackAligment = 1;
+        texture3D.needsUpdate = true;
         myShader = new MyShader(texture3D, camera.position, boundDim, canvasWidth, canvasHeight);
     }
 
