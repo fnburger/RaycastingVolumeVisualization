@@ -71,7 +71,7 @@ async function resetVis(){
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera( 75, canvasWidth / canvasHeight, 0.1, 1000 );
 
-    // new stuff
+    // If volume data is loaded send it to shader and draw histogram
     if(volume != null){
         boundDim = new THREE.Vector3(volume.width, volume.height, volume.depth);
         let texture3D = new THREE.Data3DTexture(volume.voxels, volume.width, volume.height, volume.depth);
@@ -82,7 +82,8 @@ async function resetVis(){
         texture3D.unpackAligment = 1;
         texture3D.needsUpdate = true;
         myShader = new MyShader(texture3D, camera.position, boundDim, canvasWidth, canvasHeight);
-
+        
+        // ############## define histogram #################
         let svg = d3.select("#histogram")
             .append("svg")
                 .attr("width", 350)
@@ -110,17 +111,18 @@ async function resetVis(){
         let bins = binFunc(volume.voxels);
         let binSizes = [];
         
+        // create array with amount of density values per intensity
         for (let i = 0; i != bins.length; i++) {
             binSizes.push(bins[i].length / volume.voxels.length);
         }
 
+        // map values to range [0,1]
         let minSize = Math.min.apply(Math, binSizes);
         let maxSize = Math.max.apply(Math, binSizes);
-
         let scaleFunction = function(n) { return (n - minSize) / (maxSize - minSize); };
-
-        console.log(scaleFunction(0.3));
-
+        //console.log(scaleFunction(0.3));
+        
+        // add data to histogram
         svg.selectAll("rect")
             .data(bins)
             .enter()

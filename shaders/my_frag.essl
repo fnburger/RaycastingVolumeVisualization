@@ -46,17 +46,7 @@ float sampleVolumeOpacity(vec3 position) {
 
 void main() {
 
-    // Idee 1: simple Vektordifferenz
-    //vec3 rayOrigin = cameraPos;
-    // direction of the ray is position of fragment - rayOrigin
-    //vec3 rayDirection = gl_FragCoord.xyz - rayOrigin;
-    // Final fragment color
-    //fragColor = vec4(rayDirectionNorm, 1.0);
-
-
     // Idee 2: normalisierte Variante
-    // normalize rayOrigin
-    //vec3 rayOriginNorm = cameraPos;
     // Get the coordinates of the current pixel
     //vec2 uv = ((gl_FragCoord.xy * 2.0) - resolution.xy) / resolution.y;
     // Calculate the direction of the ray from the camera position to the current pixel
@@ -64,51 +54,44 @@ void main() {
 
     vec3 rayDirectionNorm = normalize(rayDirection);
 
-    
-    
-    // Slab method
-    /*if(intersectsBox(rayDirectionNorm, rayOriginNorm, boundBox)){
-      fragColor = vec4(rayDirectionNorm, 1.0);
-    } else {
-      fragColor = vec4(1.0, 1.0, 1.0, 1.0);
-    }*/
-    
-    // TODO: idea for sampling the volume
-    // Intersect ray with volume
+    // ############# sampling the volume ##############
+    // Intersect ray with volume using slab method
     vec2 t_hit = intersectBox(transformedEye, rayDirectionNorm);
     if(t_hit.x > t_hit.y){
       discard; // No hit
     }
-    // ignore voxels behing the camera
+    // ignore voxels behind the camera
     t_hit.x = max(t_hit.x, 0.0);
     
     // define step size for marching through volume
     vec3 dt_vec = 1.0 / (vec3(boundBox) * abs(rayDirectionNorm));
     float dt = min(dt_vec.x, min(dt_vec.y, dt_vec.z));
+
+    // initialise voxel color as black
     vec4 voxelColor = vec4(0.0);
 
-    vec3 boundingBoxMin = vec3(-boundBox.x/2.0, -boundBox.y/2.0, boundBox.z/2.0);
-    vec3 boundingBoxMax = vec3(boundBox.x/2.0, boundBox.y/2.0, -boundBox.z/2.0);
+    vec3 boundingBoxMin = vec3(-boundBox.x/2.0, boundBox.y/2.0, boundBox.z/2.0);
+    vec3 boundingBoxMax = vec3(boundBox.x/2.0, -boundBox.y/2.0, -boundBox.z/2.0);
 
     // Starting from the entry point, march the ray through the volume and sample it
     vec3 p = transformedEye * 2.0 + (t_hit.x) * rayDirectionNorm;
     for (float t = t_hit.x; t < t_hit.y; t += dt) {
-
-      // new idea
+      // compute position in volume to sample
       vec3 samplePos = p + rayDirectionNorm * t;
       vec3 texCoord = (samplePos - boundingBoxMax) / ((boundingBoxMin - boundingBoxMax) * 1.5);
-      // end
-
+      // sample 3d texture 
       float val = texture(volume, texCoord).r; // changed p to texCoord
+      // use sampled value as alpha
       vec4 val_color = vec4(vec3(1.0), val);
-      // MIP
+      // MIP - overwrite value if new value is bigger (higher intensity)
       if (voxelColor.a < val_color.a) {
         voxelColor = val_color;
       }
+
+      // make next step along ray
       p += rayDirectionNorm * dt;
     }
 
     fragColor = voxelColor;
-    
 }
 
