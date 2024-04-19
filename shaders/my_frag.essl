@@ -9,7 +9,6 @@ precision highp sampler3D;
 //uniform vec3 color[2];
 //uniform int colorIdx;
 
-uniform vec3 cameraPos;
 uniform ivec3 boundBox;
 uniform sampler3D volume;
 uniform vec2 resolution;
@@ -94,17 +93,14 @@ void main() {
     for (float t = t_hit.x; t < t_hit.y; t += dt) {
 
       // new idea
-      vec3 samplePos = gl_FragCoord.xyz + rayDirectionNorm * t;
+      vec3 samplePos = p + rayDirectionNorm * t;
       vec3 texCoord = (samplePos - boundingBoxMin) / (boundingBoxMax - boundingBoxMin);
       // end
 
       float val = texture(volume, texCoord).r; // changed p to texCoord
-      vec4 val_color = vec4(vec3(val + 0.1), 1.0);
+      vec4 val_color = vec4(vec3(1.0), val);
       // MIP
-      /*if (voxelColor.a < val_color.a) {
-        voxelColor = val_color;
-      }*/
-      if (val_color.r > voxelColor.r) {
+      if (voxelColor.a < val_color.a) {
         voxelColor = val_color;
       }
       p += rayDirectionNorm * dt;
