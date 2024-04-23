@@ -93,6 +93,23 @@ async function resetVis(){
             .append("g")
                 .attr("transform", "translate(30,10)");
 
+        let x_label = d3.select("svg").append("text")
+            .attr("class", "label")
+            .attr("text-anchor", "end")
+            .attr("x", 350)
+            .attr("y", 330 - 30)
+            .attr("fill", "white")
+            .text("Density");        
+
+        let y_label = d3.select("svg").append("text")
+            .attr("class", "label")
+            .attr("text-anchor", "end")
+            .attr("y", 40)
+            .attr("dy", ".75em")
+            .attr("transform", "rotate(-90)")
+            .attr("fill", "white")
+            .text("Intensity");    
+
         let x = d3.scaleLinear()
             .domain([0.0, 1.0])
             .range([0, 300]);
@@ -119,10 +136,17 @@ async function resetVis(){
         }
 
         // map values to range [0,1]
-        let minSize = Math.min.apply(Math, binSizes);
-        let maxSize = Math.max.apply(Math, binSizes);
-        let scaleFunction = function(n) { return (n - minSize) / (maxSize - minSize); };
+        let minSize = Math.min(...binSizes);
+        let maxSize = Math.max(...binSizes);
+        //let scaleFunction = function(n) { return (n - minSize) / (maxSize - minSize); };
         //console.log(scaleFunction(0.43));
+        let scaleFunction = function(n) {
+            // Apply square root transformation to n
+            const sqrtScaled = Math.sqrt(n);
+            // Normalize the square root values to range from 0 to 1
+            return sqrtScaled / Math.sqrt(maxSize);
+        };
+        
         
         // add data to histogram
         svg.selectAll("rect")
