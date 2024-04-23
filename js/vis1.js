@@ -84,6 +84,8 @@ async function resetVis(){
         myShader = new MyShader(texture3D, camera.position, boundDim, canvasWidth, canvasHeight);
         
         // ############## define histogram #################
+        let old = d3.select("svg").remove(); // delete old histogram
+
         let svg = d3.select("#histogram")
             .append("svg")
                 .attr("width", 350)
@@ -120,7 +122,7 @@ async function resetVis(){
         let minSize = Math.min.apply(Math, binSizes);
         let maxSize = Math.max.apply(Math, binSizes);
         let scaleFunction = function(n) { return (n - minSize) / (maxSize - minSize); };
-        //console.log(scaleFunction(0.3));
+        //console.log(scaleFunction(0.43));
         
         // add data to histogram
         svg.selectAll("rect")
