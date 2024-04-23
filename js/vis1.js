@@ -84,80 +84,104 @@ async function resetVis(){
         myShader = new MyShader(texture3D, camera.position, boundDim, canvasWidth, canvasHeight);
         
         // ############## define histogram #################
-        let old = d3.select("svg").remove(); // delete old histogram
-
-        let svg = d3.select("#histogram")
-            .append("svg")
-                .attr("width", 350)
-                .attr("height", 330)
-            .append("g")
-                .attr("transform", "translate(30,10)");
-
-        let x_label = d3.select("svg").append("text")
-            .attr("class", "label")
-            .attr("text-anchor", "end")
-            .attr("x", 350)
-            .attr("y", 330 - 30)
-            .attr("fill", "white")
-            .text("Density");        
-
-        let y_label = d3.select("svg").append("text")
-            .attr("class", "label")
-            .attr("text-anchor", "end")
-            .attr("y", 40)
-            .attr("dy", ".75em")
-            .attr("transform", "rotate(-90)")
-            .attr("fill", "white")
-            .text("Intensity");    
-
-        let x = d3.scaleLinear()
-            .domain([0.0, 1.0])
-            .range([0, 300]);
-        svg.append("g")
-            .attr("transform", "translate(0, 300)")
-            .call(d3.axisBottom(x));
-
-        let y = d3.scaleLinear()
-            .domain([1.0, 0.0])
-            .range([0, 300]);
-        svg.append("g")
-            .call(d3.axisLeft(y));
-
-        let binFunc = d3.histogram()
-            .domain(x.domain())
-            .thresholds(x.ticks(100));
-
-        let bins = binFunc(volume.voxels);
-        let binSizes = [];
-        
-        // create array with amount of density values per intensity
-        for (let i = 0; i != bins.length; i++) {
-            binSizes.push(bins[i].length / volume.voxels.length);
+        let oldHistogram = d3.select("svg");
+        if (!oldHistogram.empty()) {
+            // Animation: Fade out the old histogram
+            oldHistogram.transition()
+            .duration(500)
+            .style("opacity", 0)
+            .remove()
+        .on("end", function(){
+            addNewHistogram();
+        });
+        } else {
+            addNewHistogram();
         }
+        
 
-        // map values to range [0,1]
-        let minSize = Math.min(...binSizes);
-        let maxSize = Math.max(...binSizes);
-        //let scaleFunction = function(n) { return (n - minSize) / (maxSize - minSize); };
-        //console.log(scaleFunction(0.43));
-        let scaleFunction = function(n) {
-            // Apply square root transformation to n
-            const sqrtScaled = Math.sqrt(n);
-            // Normalize the square root values to range from 0 to 1
-            return sqrtScaled / Math.sqrt(maxSize);
-        };
-        
-        
-        // add data to histogram
-        svg.selectAll("rect")
-            .data(bins)
-            .enter()
-            .append("rect")
-                .attr("x", 2)
-                .attr("transform", function(d) { return "translate(" + x(d.x0) + ", " + y(scaleFunction(d.length / volume.voxels.length)) + ")"; })
-                .attr("width", function(d) { return x(d.x1) - x(d.x0) - 1; })
-                .attr("height", function(d) { return 300 - y(scaleFunction(d.length / volume.voxels.length)); })
-                .style("fill", "#cc2222");
+
+        // creates an intensity-density histogram and adds it to the page
+        function addNewHistogram(){
+
+            let svg = d3.select("#histogram")
+                .append("svg")
+                    .attr("width", 350)
+                    .attr("height", 330)
+                .append("g")
+                    .attr("transform", "translate(30,10)");
+
+            let x_label = d3.select("svg").append("text")
+                .attr("class", "label")
+                .attr("text-anchor", "end")
+                .attr("x", 350)
+                .attr("y", 330 - 30)
+                .attr("fill", "white")
+                .text("Density");        
+
+            let y_label = d3.select("svg").append("text")
+                .attr("class", "label")
+                .attr("text-anchor", "end")
+                .attr("y", 40)
+                .attr("dy", ".75em")
+                .attr("transform", "rotate(-90)")
+                .attr("fill", "white")
+                .text("Intensity");    
+
+            let x = d3.scaleLinear()
+                .domain([0.0, 1.0])
+                .range([0, 300]);
+            svg.append("g")
+                .attr("transform", "translate(0, 300)")
+                .call(d3.axisBottom(x));
+
+            let y = d3.scaleLinear()
+                .domain([1.0, 0.0])
+                .range([0, 300]);
+            svg.append("g")
+                .call(d3.axisLeft(y));
+
+            let binFunc = d3.histogram()
+                .domain(x.domain())
+                .thresholds(x.ticks(100));
+
+            let bins = binFunc(volume.voxels);
+            let binSizes = [];
+            
+            // create array with amount of density values per intensity
+            for (let i = 0; i != bins.length; i++) {
+                binSizes.push(bins[i].length / volume.voxels.length);
+            }
+
+            // map values to range [0,1]
+            let minSize = Math.min(...binSizes);
+            let maxSize = Math.max(...binSizes);
+            //let scaleFunction = function(n) { return (n - minSize) / (maxSize - minSize); };
+            //console.log(scaleFunction(0.43));
+            let scaleFunction = function(n) {
+                // Apply square root transformation to n
+                const sqrtScaled = Math.sqrt(n);
+                // Normalize the square root values to range from 0 to 1
+                return sqrtScaled / Math.sqrt(maxSize);
+            };
+            
+            
+            // add data to histogram
+            svg.selectAll("rect")
+                .data(bins)
+                .enter()
+                .append("rect")
+                    .attr("x", 2)
+                    .attr("transform", function(d) { return "translate(" + x(d.x0) + ", " + y(scaleFunction(d.length / volume.voxels.length)) + ")"; })
+                    .attr("width", function(d) { return x(d.x1) - x(d.x0) - 1; })
+                    .attr("height", function(d) { return 300 - y(scaleFunction(d.length / volume.voxels.length)); })
+                    .style("fill", "#ff0000") // Start with a different color for the bars
+                    .transition() // this animation does not play?
+                        .duration(1500) 
+                        .delay((d, i) => i * 10) // Add a delay to stagger the animation of each bar
+                        .ease(d3.easeExpOut) // smoother animation
+                        .attr("height", function(d) { return 300 - y(scaleFunction(d.length / volume.voxels.length)); })
+                        .style("fill", "#cc2222"); 
+        }
 
     }
 
