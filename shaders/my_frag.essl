@@ -22,8 +22,8 @@ out vec4 fragColor;
 
 // returns the hit with the boundBox
 vec2 intersectBox(vec3 r0, vec3 dir) {
-    vec3 boxMin = vec3(-boundBox.x/2.0, -boundBox.y/2.0, boundBox.z/2.0);
-    vec3 boxMax = vec3(boundBox.x/2.0, boundBox.y/2.0, -boundBox.z/2.0);
+    vec3 boxMin = vec3(-boundBox.x/2.0, -boundBox.y/2.0, -boundBox.z/2.0);
+    vec3 boxMax = vec3(boundBox.x/2.0, boundBox.y/2.0, boundBox.z/2.0);
     vec3 invDir = 1.0 / dir;
     vec3 tmin_tmp = (boxMin - r0) * invDir;
     vec3 tmax_tmp = (boxMax - r0) * invDir;
@@ -70,15 +70,15 @@ void main() {
     // initialise voxel color as black
     vec4 voxelColor = vec4(0.0);
 
-    vec3 boundingBoxMin = vec3(-boundBox.x/2.0, boundBox.y/2.0, boundBox.z/2.0);
-    vec3 boundingBoxMax = vec3(boundBox.x/2.0, -boundBox.y/2.0, -boundBox.z/2.0);
+    vec3 boundingBoxMin = vec3(-boundBox.x/2.0, -boundBox.y/2.0, -boundBox.z/2.0);
+    vec3 boundingBoxMax = vec3(boundBox.x/2.0, boundBox.y/2.0, boundBox.z/2.0);
 
     // Starting from the entry point, march the ray through the volume and sample it
     vec3 p = transformedEye * 2.0 + (t_hit.x) * rayDirectionNorm;
     for (float t = t_hit.x; t < t_hit.y; t += dt) {
       // compute position in volume to sample
       vec3 samplePos = p + rayDirectionNorm * t;
-      vec3 texCoord = (samplePos - boundingBoxMax) / ((boundingBoxMin - boundingBoxMax) * 1.5);
+      vec3 texCoord = ((samplePos - boundingBoxMin) * 1.0)/ ((boundingBoxMax - boundingBoxMin) * 1.0);
       // sample 3d texture 
       float val = texture(volume, texCoord).r; // changed p to texCoord
       // use sampled value as alpha
