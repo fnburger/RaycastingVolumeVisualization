@@ -2,8 +2,6 @@
 #version 330 es
 #endif
 
-#define PI 3.1415926535
-
 precision highp int;
 precision highp float;
 precision highp sampler3D;
@@ -34,25 +32,10 @@ vec2 intersectBox(vec3 r0, vec3 dir) {
     return vec2(t0, t1);
 }
 
-// returns the color value of the volume 3D texture at the given position
-vec3 sampleVolumeColor(vec3 position) {
-    return texture(volume, position).rgb;
-}
-
-// returns the alpha value of the volume 3D texture at the given position
-float sampleVolumeOpacity(vec3 position) {
-  return texture(volume, position).a;
-}
-
 void main() {
 
-    // Idee 2: normalisierte Variante
-    // Get the coordinates of the current pixel
-    //vec2 uv = ((gl_FragCoord.xy * 2.0) - resolution.xy) / resolution.y;
-    // Calculate the direction of the ray from the camera position to the current pixel
-    //vec3 rayDirectionNorm = normalize(vec3(uv - rayOriginNorm.xy, -rayOriginNorm.z));
-
     // ############# sampling the volume ##############
+
     // Intersect ray with volume using slab method
     vec3 rayDirection = normalize(rayDir);
     vec3 rayOrigin = transformedEye;
@@ -63,14 +46,16 @@ void main() {
     }
     // ignore voxels behind the camera
     t_hit.x = max(t_hit.x, 0.0);
-    
+
+    // define step size multiplier. Higher is less accurate but more performant.
+    float dtMulti = 100.0;
     // define step size for marching through volume
     vec3 dt_vec = 1.0 / (vec3(boundBox) * abs(rayDirection));
-    float dt = min(dt_vec.x, min(dt_vec.y, dt_vec.z));
-
-    // initialise voxel color as black
-    vec4 voxelColor = vec4(0.0);
-
+    float dt = min(dt_vec.x, min(dt_vec.y, dt_vec.z)) * dtMulti;
+    
+    // initialize result
+    float result = 0.0;
+    // define bounds
     vec3 boundingBoxMin = vec3(-boundBox.x, boundBox.y, boundBox.z);
     vec3 boundingBoxMax = vec3(boundBox.x, -boundBox.y, -boundBox.z);
 
@@ -81,18 +66,16 @@ void main() {
       vec3 samplePos = p + rayDirection * t;
       vec3 texCoord = (samplePos - boundingBoxMax) / ((boundingBoxMin - boundingBoxMax) * 1.0);
       // sample 3d texture 
-      float val = texture(volume, texCoord).r; // changed p to texCoord
-      // use sampled value as alpha
-      vec4 val_color = vec4(vec3(1.0), val);
+      float alpha = texture(volume, texCoord).r;
       // MIP - overwrite value if new value is bigger (higher intensity)
-      if (voxelColor.a < val_color.a) {
-        voxelColor = val_color;
+      if (alpha > result) {
+        result = alpha;
       }
 
       // make next step along ray
       p += rayDirection * dt;
     }
 
-    fragColor = voxelColor;
+    fragColor = vec4(result, result, result, 1.0);
 }
 

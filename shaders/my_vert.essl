@@ -9,7 +9,7 @@ out vec3 rayDir;
 
 void main() {
     mat4 mvp = projectionMatrix * viewMatrix * modelMatrix;
-    mat4 pvm = modelMatrix * viewMatrix * projectionMatrix;
+    //mat4 pvm = modelMatrix * viewMatrix * projectionMatrix;
 
     gl_Position = mvp * vec4(position, 1);
 
