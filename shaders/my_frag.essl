@@ -39,6 +39,19 @@ vec3 computeFirstHit(vec3 pos_current, vec3 pos_next, float value_current, float
     return pos_current + t * (pos_next - pos_current);
 }
 
+// returns the gradient of the surface at the first-hit position
+vec3 computeGradient(sampler3D volume, vec3 texCoord) {
+    vec3 offset = vec3(1.0 / float(textureSize(volume, 0)));
+    float valueX1 = texture(volume, texCoord + vec3(offset.x, 0.0, 0.0)).r;
+    float valueX2 = texture(volume, texCoord - vec3(offset.x, 0.0, 0.0)).r;
+    float valueY1 = texture(volume, texCoord + vec3(0.0, offset.y, 0.0)).r;
+    float valueY2 = texture(volume, texCoord - vec3(0.0, offset.y, 0.0)).r;
+    float valueZ1 = texture(volume, texCoord + vec3(0.0, 0.0, offset.z)).r;
+    float valueZ2 = texture(volume, texCoord - vec3(0.0, 0.0, offset.z)).r;
+    vec3 gradient = vec3(valueX1 - valueX2, valueY1 - valueY2, valueZ1 - valueZ2);
+    return gradient;
+}
+
 void main() {
 
     // ############# sampling the volume ##############
@@ -55,7 +68,7 @@ void main() {
     t_hit.x = max(t_hit.x, 0.0);
 
     // define step size multiplier. Higher is less accurate but more performant.
-    float dtMulti = 10.0;
+    float dtMulti = 1.0;
     // define step size for marching through volume
     vec3 dt_vec = 1.0 / (vec3(boundBox) * abs(rayDirection));
     float dt = min(dt_vec.x, min(dt_vec.y, dt_vec.z)) * dtMulti;
@@ -100,7 +113,36 @@ void main() {
     if (firstHitFound) {
         // use firstHitPosition for shading
         vec3 normalizedPosition = (firstHitPosition - boundingBoxMax) / (boundingBoxMin - boundingBoxMax);
-        fragColor = vec4(normalizedPosition, 1.0);
+        vec3 gradient = computeGradient(volume, normalizedPosition);
+        vec3 normal = normalize(gradient);
+
+        // Lighting calculations
+        
+        // more complicated lighting
+        vec3 ambientColor = vec3(1.0, 1.0, 1.0); 
+        vec3 lightColor = vec3(1.0, 1.0, 1.0); 
+        vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0)); 
+        float diffuse = max(dot(normal, lightDir), 0.0); 
+        vec3 viewDir = normalize(transformedEye - firstHitPosition); 
+        vec3 reflectDir = reflect(-lightDir, normal); 
+        float specular = pow(max(dot(viewDir, reflectDir), 0.0), 32.0); 
+        vec3 ambient = ambientColor * normalizedPosition; 
+        vec3 diffuseColor = lightColor * diffuse * normalizedPosition ; // * vec3(texture(volume, normalizedPosition))
+        vec3 specularColor = lightColor * specular; // * vec3(texture(volume, normalizedPosition))
+        vec3 finalColor = ambient + diffuseColor + specularColor; 
+        fragColor = vec4(finalColor, 1.0);
+        
+
+        // very simple lighting
+        /*
+        vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0));
+        float diffuse = max(dot(normal, lightDir), 0.0);
+        vec3 color = vec3(diffuse);
+        fragColor = vec4(color, 1.0);
+        */
+
+        // debugging coloring using positions
+        //fragColor = vec4(normalizedPosition, 1.0);
     } else {
         fragColor = vec4(0.0, 0.0, 0.0, 1.0);
     }
