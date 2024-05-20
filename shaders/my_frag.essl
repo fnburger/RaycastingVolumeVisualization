@@ -55,7 +55,7 @@ void main() {
     t_hit.x = max(t_hit.x, 0.0);
 
     // define step size multiplier. Higher is less accurate but more performant.
-    float dtMulti = 75.0;
+    float dtMulti = 10.0;
     // define step size for marching through volume
     vec3 dt_vec = 1.0 / (vec3(boundBox) * abs(rayDirection));
     float dt = min(dt_vec.x, min(dt_vec.y, dt_vec.z)) * dtMulti;
@@ -99,7 +99,8 @@ void main() {
     // ####### shading #######
     if (firstHitFound) {
         // use firstHitPosition for shading
-        fragColor = vec4(firstHitPosition, 1.0);
+        vec3 normalizedPosition = (firstHitPosition - boundingBoxMax) / (boundingBoxMin - boundingBoxMax);
+        fragColor = vec4(normalizedPosition, 1.0);
     } else {
         fragColor = vec4(0.0, 0.0, 0.0, 1.0);
     }

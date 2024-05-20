@@ -14,5 +14,10 @@ void main() {
     gl_Position = mvp * vec4(position, 1);
 
     transformedEye = cameraPos;
+    //transformedEye = (modelMatrix * vec4(cameraPos, 1)).xyz; 
+    //transformedEye = (inverse(viewMatrix) * vec4(cameraPos, 1.0)).xyz;
     rayDir = position - transformedEye;
+    //rayDir = normalize((modelMatrix * vec4(position, 1)).xyz - transformedEye); 
+    //rayDir = (inverse(viewMatrix) * vec4(position, 1.0)).xyz - transformedEye;
+
 }
