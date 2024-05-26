@@ -219,6 +219,17 @@ function onSliderInput(val) {
     }
 }
 
+function onColorChange(val) {
+    let parts = val.split(' ');
+    let r = parseFloat(parts[0]) / 255.0;
+    let g = parseFloat(parts[1]) / 255.0;
+    let b = parseFloat(parts[2]) / 255.0;
+    if (myShader != null) {
+        myShader.updateColor(new THREE.Vector3(r, g, b));
+        requestAnimationFrame(paint);
+    }
+}
+
 /**
  * Render the scene and update all necessary shader information.
  */

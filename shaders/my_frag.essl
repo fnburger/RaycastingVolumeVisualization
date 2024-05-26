@@ -13,6 +13,7 @@ uniform vec3 boundBox;
 uniform sampler3D volume;
 uniform vec2 resolution;
 uniform float u_isoValue;
+uniform vec3 color;
 
 in vec3 rayDir;
 in vec3 transformedEye;
@@ -124,12 +125,14 @@ void main() {
         float diffuse = max(dot(normal, lightDir), 0.0); 
         vec3 viewDir = normalize(transformedEye - firstHitPosition); 
         vec3 reflectDir = reflect(-lightDir, normal); 
-        float specular = pow(max(dot(viewDir, reflectDir), 0.0), 32.0); 
-        vec3 ambient = ambientColor * normalizedPosition; 
-        vec3 diffuseColor = lightColor * diffuse * (normalizedPosition * 2.0) ; // * vec3(texture(volume, normalizedPosition))
+        float specular = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
+        float textureValue = texture(volume, normalizedPosition).r;
+        vec3 colorFromTexture = vec3(textureValue);
+        vec3 ambient = ambientColor * colorFromTexture;
+        vec3 diffuseColor = lightColor * diffuse * colorFromTexture;
         vec3 specularColor = lightColor * specular; // * vec3(texture(volume, normalizedPosition))
         vec3 finalColor = ambient + diffuseColor + specularColor; 
-        fragColor = vec4(finalColor, 1.0);
+        fragColor = vec4(finalColor, 1.0) * vec4(color, 1);
         
 
         // very simple lighting
