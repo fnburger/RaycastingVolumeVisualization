@@ -53,7 +53,6 @@ vec3 computeGradient(sampler3D volume, vec3 texCoord) {
 }
 
 void main() {
-
     // ############# sampling the volume ##############
 
     // Intersect ray with volume using slab method

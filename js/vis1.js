@@ -22,6 +22,7 @@ let fileInput = null;
 let testShader = null;
 
 let myShader = null;
+let isoValue = 0.2;
 
 /**
  * Load all data and initialize UI here.
@@ -74,10 +75,22 @@ async function resetVis(){
     // If volume data is loaded send it to shader and draw histogram
     if(volume != null){
         boundDim = new THREE.Vector3(volume.width, volume.height, volume.depth);
-        let texture3D = new THREE.Data3DTexture(volume.voxels, volume.width, volume.height, volume.depth);
+        
+        // Find min and max values using a loop
+        let minVoxel = volume.voxels[0];
+        let maxVoxel = volume.voxels[0];
+
+        for (let i = 1; i < volume.size; i++) {
+            if (volume.voxels[i] < minVoxel) minVoxel = volume.voxels[i];
+            if (volume.voxels[i] > maxVoxel) maxVoxel = volume.voxels[i];
+        }
+
+        let voxelsNorm = volume.voxels.map((x) => (x - minVoxel) / (maxVoxel - minVoxel));
+        let texture3D = new THREE.Data3DTexture(voxelsNorm, volume.width, volume.height, volume.depth);
         texture3D.format = THREE.RedFormat;
         texture3D.type = THREE.FloatType;
-        texture3D.minFilter = texture3D.magFilter = THREE.LinearFilter;
+        texture3D.minFilter = THREE.LinearMipmapLinearFilter;
+        texture3D.magFilter = THREE.LinearFilter;
         //texture3D.wrapS = texture3D.wrapT = texture3D.wrapR = THREE.RepeatWrapping;
         texture3D.unpackAligment = 1;
         texture3D.needsUpdate = true;
@@ -182,7 +195,6 @@ async function resetVis(){
                         .attr("height", function(d) { return 300 - y(scaleFunction(d.length / volume.voxels.length)); })
                         .style("fill", "#cc2222"); 
         }
-
     }
 
     // dummy scene: we render a box and attach our color test shader as material
@@ -197,6 +209,14 @@ async function resetVis(){
 
     // init paint loop
     requestAnimationFrame(paint);
+}
+
+function onSliderInput(val) {
+    isoValue = parseFloat(val);
+    if (myShader != null) {
+        myShader.updateISO(isoValue);
+        requestAnimationFrame(paint);
+    }
 }
 
 /**

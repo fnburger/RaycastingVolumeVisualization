@@ -38,6 +38,7 @@
 
     <!-- container for interactive transfer function -->
     <div id="tfContainer">
+        <input type="range" id="slider" min="0" max="1" value="0.2" step="0.001" oninput="onSliderInput(this.value)">
         <div id="histogram"></div>
     </div>
 
