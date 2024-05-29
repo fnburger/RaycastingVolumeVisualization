@@ -13,7 +13,11 @@ uniform vec3 boundBox;
 uniform sampler3D volume;
 uniform vec2 resolution;
 uniform float u_isoValue;
-uniform vec3 color;
+// transfer function uniforms
+uniform int numIsosurfaces;
+uniform float isoValues[3]; // maximum of 3 isosurfaces
+uniform vec3 isoColors[3];
+uniform float isoOpacities[3];
 
 in vec3 rayDir;
 in vec3 transformedEye;
@@ -81,6 +85,8 @@ void main() {
     vec3 p = rayOrigin * 2.0 + (t_hit.x) * rayDirection; // initialize sampling position
     bool firstHitFound = false;
     vec3 firstHitPosition = vec3(0.0);
+    vec3 firstHitColor = vec3(0.0);
+    float firstHitOpacity = 0.0;
 
     for (float t = t_hit.x; t < t_hit.y; t += dt) {
       // compute position in volume to sample
@@ -93,17 +99,23 @@ void main() {
             break; // this ray is done after its crossing of the ISO value was found
         }
 
-      // first-hit compositing: check for first time the ISO value is crossed
-        if (alpha >= u_isoValue) {
-            vec3 prevSamplePos = samplePos - rayDirection * dt;
-            vec3 prevTexCoord = (prevSamplePos - boundingBoxMax) / ((boundingBoxMin - boundingBoxMax) * 1.0);
-            float prevAlpha = texture(volume, prevTexCoord).r;
+        // first-hit compositing with transfer function: check for each voxel against multiple iso values
+        for (int i = 0; i < numIsosurfaces; i++) {
+            if (alpha >= isoValues[i]) {
+                vec3 prevSamplePos = samplePos - rayDirection * dt;
+                vec3 prevTexCoord = (prevSamplePos - boundingBoxMax) / ((boundingBoxMin - boundingBoxMax) * 1.0);
+                float prevAlpha = texture(volume, prevTexCoord).r;
 
-            if (prevAlpha < u_isoValue) {
-                firstHitPosition = computeFirstHit(prevSamplePos, samplePos, prevAlpha, alpha);
-                firstHitFound = true;
+                if (prevAlpha < isoValues[i]) {
+                    firstHitPosition = computeFirstHit(prevSamplePos, samplePos, prevAlpha, alpha);
+                    firstHitColor = isoColors[i];
+                    firstHitOpacity = isoOpacities[i];
+                    firstHitFound = true;
+                    break;
+                }
             }
         }
+
 
       // make next step along ray
       p += rayDirection * dt;
@@ -117,8 +129,6 @@ void main() {
         vec3 normal = normalize(gradient);
 
         // Lighting calculations
-        
-        // more complicated lighting
         vec3 ambientColor = vec3(1.0, 1.0, 1.0); 
         vec3 lightColor = vec3(1.0, 1.0, 1.0); 
         vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0)); 
@@ -126,25 +136,16 @@ void main() {
         vec3 viewDir = normalize(transformedEye - firstHitPosition); 
         vec3 reflectDir = reflect(-lightDir, normal); 
         float specular = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
+
         float textureValue = texture(volume, normalizedPosition).r;
         vec3 colorFromTexture = vec3(textureValue);
+
         vec3 ambient = ambientColor * colorFromTexture;
         vec3 diffuseColor = lightColor * diffuse * colorFromTexture;
-        vec3 specularColor = lightColor * specular; // * vec3(texture(volume, normalizedPosition))
+        vec3 specularColor = lightColor * specular;
         vec3 finalColor = ambient + diffuseColor + specularColor; 
-        fragColor = vec4(finalColor, 1.0) * vec4(color, 1);
+        fragColor = vec4(finalColor, firstHitOpacity) * vec4(firstHitColor, 1.0);
         
-
-        // very simple lighting
-        /*
-        vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0));
-        float diffuse = max(dot(normal, lightDir), 0.0);
-        vec3 color = vec3(diffuse);
-        fragColor = vec4(color, 1.0);
-        */
-
-        // debugging coloring using positions
-        //fragColor = vec4(normalizedPosition, 1.0);
     } else {
         fragColor = vec4(0.0, 0.0, 0.0, 1.0);
     }

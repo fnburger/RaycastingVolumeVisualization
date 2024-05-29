@@ -22,7 +22,9 @@ let fileInput = null;
 let testShader = null;
 
 let myShader = null;
-let isoValue = 0.2;
+let isoValues = [0.2, 0.5, 0.9];
+let colors = [new THREE.Vector3(1.0, 1.0, 1.0), new THREE.Vector3(1.0, 1.0, 1.0), new THREE.Vector3(1.0, 1.0, 1.0)];
+let opacities = [1.0, 1.0, 1.0];
 
 /**
  * Load all data and initialize UI here.
@@ -211,21 +213,31 @@ async function resetVis(){
     requestAnimationFrame(paint);
 }
 
+// slider for isoValue for iso surface 0
 function onSliderInput(val) {
-    isoValue = parseFloat(val);
+    isoValues[0] = parseFloat(val);
+
     if (myShader != null) {
-        myShader.updateISO(isoValue);
+        myShader.updateISO(isoValues);
         requestAnimationFrame(paint);
     }
 }
 
+// slider for color for iso surface 0
 function onColorChange(val) {
     let parts = val.split(' ');
     let r = parseFloat(parts[0]) / 255.0;
     let g = parseFloat(parts[1]) / 255.0;
     let b = parseFloat(parts[2]) / 255.0;
+
+    let a = 1.0; // TODO: make opacity changable in editor for each iso surface independently. probably need own function onOpacityChange()
+    
+    colors[0] = new THREE.Vector3(r,g,b);
+    opacities[0] = a; // TODO: move this to onOpacityChange() for first opacity picker (iso surface 0)
+
     if (myShader != null) {
-        myShader.updateColor(new THREE.Vector3(r, g, b));
+        myShader.updateColor(colors);
+        myShader.updateOpacity(opacities);
         requestAnimationFrame(paint);
     }
 }
