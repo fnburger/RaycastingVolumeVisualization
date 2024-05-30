@@ -38,9 +38,45 @@
 
     <!-- container for interactive transfer function -->
     <div id="tfContainer">
-        <input type="range" id="slider" min="0" max="1" value="0.2" step="0.001" oninput="onSliderInput(this.value)">
+        <input type="range" id="slider" min="0" max="1" value="0.2" step="0.001" oninput="onSliderInput(this.value, 0)">
+        <input type="range" id="slider" min="0" max="1" value="0.2" step="0.001" oninput="onSliderInput(this.value, 1)">
+        <input type="range" id="slider" min="0" max="1" value="0.2" step="0.001" oninput="onSliderInput(this.value, 2)">
         <div id="histogram"></div>
-        <select id="colors" onchange="onColorChange(this.value)">
+        <select id="colors" onchange="onColorChange(this.value, 0)">
+            <option value="255 255 255">White</option>
+            <option value="200 200 200">Light Gray</option>
+            <option value="50 50 50">Dark Gray</option>
+            <option value="10 10 10">Almost Black</option>
+            <option value="255 0 0">Red</option>
+            <option value="0 255 0">Green</option>
+            <option value="0 0 255">Blue</option>
+            <option value="255 255 0">Yellow</option>
+            <option value="0 255 255">Cyan</option>
+            <option value="255 0 255">Magenta</option>
+            <option value="180 0 255">Purple</option>
+            <option value="0 255 180">Blue Green</option>
+            <option value="255 128 0">Orange</option>
+            <option value="128 64 0">Brown</option>
+            <option value="211 139 227">Lavender</option>
+        </select>
+        <select id="colors" onchange="onColorChange(this.value, 1)">
+            <option value="255 255 255">White</option>
+            <option value="200 200 200">Light Gray</option>
+            <option value="50 50 50">Dark Gray</option>
+            <option value="10 10 10">Almost Black</option>
+            <option value="255 0 0">Red</option>
+            <option value="0 255 0">Green</option>
+            <option value="0 0 255">Blue</option>
+            <option value="255 255 0">Yellow</option>
+            <option value="0 255 255">Cyan</option>
+            <option value="255 0 255">Magenta</option>
+            <option value="180 0 255">Purple</option>
+            <option value="0 255 180">Blue Green</option>
+            <option value="255 128 0">Orange</option>
+            <option value="128 64 0">Brown</option>
+            <option value="211 139 227">Lavender</option>
+        </select>
+        <select id="colors" onchange="onColorChange(this.value, 2)">
             <option value="255 255 255">White</option>
             <option value="200 200 200">Light Gray</option>
             <option value="50 50 50">Dark Gray</option>

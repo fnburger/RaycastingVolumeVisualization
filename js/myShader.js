@@ -5,14 +5,14 @@ class MyShader extends Shader{
         this.setUniform("boundBox", boundDim);
         this.setUniform("volume", material);
         this.setUniform("resolution", new THREE.Vector2(width,height));
-        this.setUniform("isoValues", [0.2, 0.5, 0.9]); // currently only the first iso value can be changed. we need two more sliders that can be added and removed.
+        this.setUniform("isoValues", [0.2, 0.5, 0.9]); 
         this.setUniform("isoColors", [new THREE.Vector3(1.0, 1.0, 1.0), 
-                                    new THREE.Vector3(1.0, 1.0, 1.0), // this color will be changed using the second color picker
-                                    new THREE.Vector3(1.0, 1.0, 1.0)]); // this color will be changed using the third color picker
-        this.setUniform("isoOpacities", [1.0, 1.0, 1.0]);
+                                    new THREE.Vector3(0.0, 1.0, 0.6), 
+                                    new THREE.Vector3(1.0, 0.0, 0.6)]); 
+        this.setUniform("isoOpacities", [0.6, 0.8, 1.0]);
 
-        // default is that only the first iso surface is visible. we need a button to add and remove surfaces (max value is 3 because the array in the shader has size 3)
-        this.setUniform("numIsosurfaces", 1); // each surface needs it own slider and color picker (and onChange function in vis1.js)
+        //  we need a button to add and remove surfaces (max value is 3 because the array in the shader has size 3)
+        this.setUniform("numIsosurfaces", 3); 
     }
 
     updateISO(isoValues) {
@@ -26,4 +26,5 @@ class MyShader extends Shader{
     updateOpacity(opacities) {
         this.setUniform("isoOpacities", opacities);
     }
+    
 }
