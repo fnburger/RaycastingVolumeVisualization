@@ -23,9 +23,10 @@ let testShader = null;
 
 let myShader = null;
 let isoValues = [0.2, 0.5, 0.9];
-let colors = [new THREE.Vector3(1.0, 1.0, 1.0), new THREE.Vector3(0.0, 1.0, 0.6), new THREE.Vector3(1.0, 0.0, 0.6)];
+let colors = [new THREE.Vector3(0.55, 0.28, 0.18), new THREE.Vector3(0.9, 0.9, 0.9), new THREE.Vector3(1.0, 1.0, 1.0)];
 let opacities = [0.6, 0.8, 1.0];
 let sampling_rate = 1.0;
+let number_surfaces = 1;
 
 /**
  * Load all data and initialize UI here.
@@ -97,7 +98,7 @@ async function resetVis(){
         //texture3D.wrapS = texture3D.wrapT = texture3D.wrapR = THREE.RepeatWrapping;
         texture3D.unpackAligment = 1;
         texture3D.needsUpdate = true;
-        myShader = new MyShader(texture3D, camera.position, boundDim, canvasWidth, canvasHeight);
+        myShader = new MyShader(texture3D, camera.position, boundDim, canvasWidth, canvasHeight, number_surfaces, sampling_rate, opacities, colors, isoValues);
         
         // ############## define histogram #################
         let oldHistogram = d3.select("svg");
@@ -242,7 +243,7 @@ function onColorChange(val, id) {
     let b = parseFloat(parts[2]) / 255.0;
     
     colors[id] = new THREE.Vector3(r,g,b);
-
+    console.log("changed color if surface" + id);
     if (myShader != null) {
         myShader.updateColor(colors);
         myShader.updateOpacity(opacities);
@@ -250,12 +251,57 @@ function onColorChange(val, id) {
     }
 }
 
+// slider for sampling rate multi
 function onSamplingRateInput(val) {
     sampling_rate = parseFloat(val);
     if (myShader != null) {
         myShader.updateSampling(sampling_rate);
         requestAnimationFrame(paint);
     }
+}
+
+// button action add surface
+function onAddSurfaceClick() {
+    if(number_surfaces < 3) {
+        number_surfaces += 1;
+        setEditorElementsVisibility(number_surfaces - 1, true);
+        if (myShader != null) {
+            myShader.updateNumberSurfaces(number_surfaces);
+            requestAnimationFrame(paint);
+        }
+    } else {
+        console.log("Max number of iso surfaces (3) reached.")
+    }
+}
+
+// button action remove surface
+function onRemoveSurfaceClick() {
+    if(number_surfaces > 1) {
+        number_surfaces -= 1;
+        setEditorElementsVisibility(number_surfaces, false);
+        if (myShader != null) {
+            myShader.updateNumberSurfaces(number_surfaces);
+            requestAnimationFrame(paint);
+        }
+    } else {
+        console.log("Cannot remove last iso surface or viewport will be empty.")
+    }
+}
+
+function setEditorElementsVisibility(id, visible) {
+    const iso_slider = document.getElementById("iso" + id);
+    const color_picker = document.getElementById("col" + id);
+    const op_slider = document.getElementById("op" + id);
+    if(visible) {
+        iso_slider.hidden = false;
+        color_picker.hidden = false;
+        op_slider.hidden = false;
+    } else {
+        iso_slider.hidden = true;
+        color_picker.hidden = true;
+        op_slider.hidden = true;
+    }
+    
 }
 
 /**
