@@ -29,52 +29,9 @@ body {
 }
 
 input[type="range"] {
-    -webkit-appearance: none;
     width: 100%;
     background: transparent; /* Hide the default slider track */
     position: relative;
     z-index: 1; /* Place above the fake track */
 }
 
-input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 0; /* The width of the triangle is determined by the border */
-    height: 0; /* The height of the triangle is determined by the border */
-    border-left: 10px solid transparent;
-    border-right: 10px solid transparent;
-    border-top: 20px solid #007bff;
-    position: relative;
-    z-index: 2; /* Place above the track */
-}
-
-input[type="range"]::-moz-range-thumb {
-    width: 0; /* The width of the triangle is determined by the border */
-    height: 0; /* The height of the triangle is determined by the border */
-    border-left: 10px solid transparent;
-    border-right: 10px solid transparent;
-    border-top: 20px solid #007bff;
-    position: relative;
-    z-index: 2; /* Place above the track */
-}
-
-input[type="range"]::-ms-thumb {
-    width: 0; /* The width of the triangle is determined by the border */
-    height: 0; /* The height of the triangle is determined by the border */
-    border-left: 10px solid transparent;
-    border-right: 10px solid transparent;
-    border-top: 20px solid #007bff;
-    position: relative;
-    z-index: 2; /* Place above the track */
-}
-
-/* Hide the track for Firefox */
-input[type="range"]::-moz-range-track {
-    background: transparent;
-}
-
-/* Hide the track for IE */
-input[type="range"]::-ms-track {
-    background: transparent;
-    border-color: transparent;
-    color: transparent;
-}

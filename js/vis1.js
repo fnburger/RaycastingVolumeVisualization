@@ -112,7 +112,7 @@ async function resetVis(){
         } else {
             addNewHistogram();
         }
-        
+
 
 
         // creates an intensity-density histogram and adds it to the page
@@ -213,7 +213,7 @@ async function resetVis(){
     requestAnimationFrame(paint);
 }
 
-// slider for isoValue for iso surface 0
+// slider for isoValue
 function onSliderInput(val, id) {
     isoValues[id] = parseFloat(val);
 
@@ -223,17 +223,24 @@ function onSliderInput(val, id) {
     }
 }
 
-// slider for color for iso surface 0
+// slider for opacities of iso surfaces
+function onOpacitySliderInput(val, id) {
+    opacities[id] = parseFloat(val);
+
+    if(myShader != null) {
+        myShader.updateOpacity(opacities);
+        requestAnimationFrame(paint);
+    }
+}
+
+// slider for colors of iso surfaces
 function onColorChange(val, id) {
     let parts = val.split(' ');
     let r = parseFloat(parts[0]) / 255.0;
     let g = parseFloat(parts[1]) / 255.0;
     let b = parseFloat(parts[2]) / 255.0;
-
-    let a = 1.0; 
     
     colors[id] = new THREE.Vector3(r,g,b);
-    opacities[id] = a; // TODO: move this to new function onOpacityChange() 
 
     if (myShader != null) {
         myShader.updateColor(colors);

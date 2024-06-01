@@ -44,6 +44,10 @@ vec3 computeFirstHit(vec3 pos_current, vec3 pos_next, float value_current, float
     return pos_current + t * (pos_next - pos_current);
 }
 
+vec3 newInterpolation(vec3 pos_current, vec3 pos_prev, int i, float value_current, float value_prev) {
+    return mix(pos_prev, pos_current, (isoValues[i] - value_prev) / (value_current - value_prev));
+}
+
 // returns the gradient of the surface at the first-hit position
 vec3 computeGradient(sampler3D volume, vec3 texCoord) {
     vec3 offset = vec3(1.0 / float(textureSize(volume, 0)));
@@ -107,7 +111,8 @@ void main() {
                 float prevAlpha = texture(volume, prevTexCoord).r;
 
                 if (prevAlpha < isoValues[i]) {
-                    firstHitPosition = computeFirstHit(prevSamplePos, samplePos, prevAlpha, alpha);
+                    //firstHitPosition = computeFirstHit(prevSamplePos, samplePos, prevAlpha, alpha);
+                    firstHitPosition = newInterpolation(samplePos, prevSamplePos, i, alpha, prevAlpha);
                     firstHitColor = isoColors[i];
                     firstHitOpacity = isoOpacities[i];
                     firstHitFound = true;
@@ -115,7 +120,6 @@ void main() {
                 }
             }
         }
-
 
       // make next step along ray
       p += rayDirection * dt;
@@ -129,6 +133,7 @@ void main() {
         vec3 normal = normalize(gradient);
 
         // Lighting calculations
+        /*
         vec3 ambientColor = vec3(1.0, 1.0, 1.0); 
         vec3 lightColor = vec3(1.0, 1.0, 1.0); 
         vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0)); 
@@ -145,6 +150,16 @@ void main() {
         vec3 specularColor = lightColor * specular;
         vec3 finalColor = ambient + diffuseColor + specularColor; 
         fragColor = vec4(finalColor, firstHitOpacity) * vec4(firstHitColor, 1.0);
+        */
+
+        // simple lighting
+        vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0));
+        vec3 reflectDir = reflect(-lightDir, normal);
+        vec3 viewDir = normalize(transformedEye - firstHitPosition); 
+        float specular = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
+        float diffuse = max(dot(normal, lightDir), 0.0);
+        vec3 color = vec3(diffuse) + vec3(specular);
+        fragColor = vec4(color, firstHitOpacity) * vec4(firstHitColor, 1.0);
         
     } else {
         fragColor = vec4(0.0, 0.0, 0.0, 1.0);

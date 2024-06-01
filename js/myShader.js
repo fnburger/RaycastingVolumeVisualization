@@ -6,10 +6,10 @@ class MyShader extends Shader{
         this.setUniform("volume", material);
         this.setUniform("resolution", new THREE.Vector2(width,height));
         this.setUniform("isoValues", [0.2, 0.5, 0.9]); 
-        this.setUniform("isoColors", [new THREE.Vector3(1.0, 1.0, 1.0), 
-                                    new THREE.Vector3(0.0, 1.0, 0.6), 
-                                    new THREE.Vector3(1.0, 0.0, 0.6)]); 
-        this.setUniform("isoOpacities", [0.6, 0.8, 1.0]);
+        this.setUniform("isoColors", [new THREE.Vector3(0.55, 0.28, 0.18), // 141,71,47
+                                    new THREE.Vector3(0.9, 0.9, 0.9), // white bones
+                                    new THREE.Vector3(1.0, 1.0, 1.0)]); // teeth
+        this.setUniform("isoOpacities", [1.0, 1.0, 1.0]);
 
         //  we need a button to add and remove surfaces (max value is 3 because the array in the shader has size 3)
         this.setUniform("numIsosurfaces", 3); 
