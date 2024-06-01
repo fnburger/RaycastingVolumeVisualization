@@ -6,13 +6,11 @@ precision highp int;
 precision highp float;
 precision highp sampler3D;
 
-//uniform vec3 color[2];
-//uniform int colorIdx;
-
 uniform vec3 boundBox;
 uniform sampler3D volume;
 uniform vec2 resolution;
 uniform float u_isoValue;
+
 // transfer function uniforms
 uniform int numIsosurfaces;
 uniform float isoValues[3]; // maximum of 3 isosurfaces
@@ -90,35 +88,22 @@ void main() {
     float dt = min(dt_vec.x, min(dt_vec.y, dt_vec.z)) * dtMulti;
     
     // define bounds
-    vec3 boundingBoxMin = vec3(-boundBox.x, boundBox.y, boundBox.z);
-    vec3 boundingBoxMax = vec3(boundBox.x, -boundBox.y, -boundBox.z);
+    vec3 boundingBoxMin = vec3(-boundBox.x / 2.0, -boundBox.y / 2.0, -boundBox.z / 2.0);
+    vec3 boundingBoxMax = vec3(boundBox.x / 2.0, boundBox.y / 2.0, boundBox.z / 2.0);
 
     // ###### starting from the entry point, march the ray through the volume and sample it ######
-    vec3 p = rayOrigin * 2.0 + (t_hit.x) * rayDirection; // initialize sampling position
+    //vec3 p = rayOrigin + (t_hit.x) * rayDirection; // initialize sampling position
     bool firstHitFound = false;
     vec3 firstHitPosition = vec3(0.0);
-    vec3 firstHitColor = vec3(0.0);
-    float firstHitOpacity = 0.0;
+    vec4 accumulatedColor = vec4(0.0);
+    float accumulatedOpacity = 0.0;
 
     for (float t = t_hit.x; t < t_hit.y; t += dt) {
       // compute position in volume to sample
-      vec3 samplePos = p + rayDirection * t;
-      vec3 texCoord = (samplePos - boundingBoxMax) / ((boundingBoxMin - boundingBoxMax) * 1.0);
-      // sample 3d texture 
-      float alpha = texture(volume, texCoord).r;
-      /*
-      float interpVal = 0.0001;
-      float alpha1 = texture(volume, texCoord + vec3(interpVal)).r;
-      float alpha2 = texture(volume, texCoord - vec3(interpVal)).r;
-      float alpha3 = texture(volume, texCoord + vec3(-interpVal, interpVal, interpVal)).r;
-      float alpha4 = texture(volume, texCoord + vec3(interpVal, -interpVal, interpVal)).r;
-      float alpha5 = texture(volume, texCoord + vec3(interpVal, interpVal, -interpVal)).r;
-      alpha = mix(alpha, alpha1, 0.5);
-      alpha = mix(alpha, alpha2, 0.5);
-      alpha = mix(alpha, alpha3, 0.5);
-      alpha = mix(alpha, alpha4, 0.5);
-      alpha = mix(alpha, alpha5, 0.5);
-      */
+      vec3 samplePos = rayOrigin + rayDirection * t; // changed p to rayOrigin
+      vec3 texCoord = (samplePos - boundingBoxMin) / ((boundingBoxMax - boundingBoxMin) * 1.0);
+      float alpha = texture(volume, texCoord).r; // sample 3d texture 
+     
 
       if (firstHitFound) {
             break; // this ray is done after its crossing of the ISO value was found
@@ -128,62 +113,42 @@ void main() {
         for (int i = 0; i < numIsosurfaces; i++) {
             if (alpha >= isoValues[i]) {
                 vec3 prevSamplePos = samplePos - rayDirection * dt;
-                vec3 prevTexCoord = (prevSamplePos - boundingBoxMax) / ((boundingBoxMin - boundingBoxMax) * 1.0);
+                vec3 prevTexCoord = (prevSamplePos - boundingBoxMin) / ((boundingBoxMax - boundingBoxMin) * 1.0);
                 float prevAlpha = texture(volume, prevTexCoord).r;
 
                 if (prevAlpha < isoValues[i]) {
                     //firstHitPosition = computeFirstHit(prevSamplePos, samplePos, prevAlpha, alpha);
                     firstHitPosition = newInterpolation(samplePos, prevSamplePos, i, alpha, prevAlpha);
-                    firstHitColor = isoColors[i];
-                    firstHitOpacity = isoOpacities[i];
-                    firstHitFound = true;
+                    vec3 normalizedPosition = (firstHitPosition - boundingBoxMin) / (boundingBoxMax - boundingBoxMin);
+                    vec3 gradient = computeGradient(volume, normalizedPosition);
+                    vec3 normal = normalize(gradient);
+
+                    vec3 lightDir = normalize(vec3(-1.0, 1.0, 1.0));
+                    vec3 reflectDir = reflect(-lightDir, normal);
+                    vec3 viewDir = normalize(transformedEye - firstHitPosition); 
+                    float specular = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
+                    float diffuse = max(dot(normal, lightDir), 0.0);
+                    vec3 color = isoColors[i] * diffuse + vec3(specular);
+
+                    float opacity = isoOpacities[i] * (1.0 - accumulatedOpacity);
+                    accumulatedColor += vec4(color, opacity) * opacity;
+                    accumulatedOpacity += opacity;
+                    //firstHitColor = isoColors[i];
+                    //firstHitOpacity = isoOpacities[i];
+                    //firstHitFound = true;
+
+
+                    if (accumulatedOpacity >= 1.0) {
+                        fragColor = accumulatedColor;
+                        return;
+                    }
                     break;
                 }
             }
         }
-
-      // make next step along ray
-      p += rayDirection * dt;
     }
 
     // ####### shading #######
-    if (firstHitFound) {
-        // use firstHitPosition for shading
-        vec3 normalizedPosition = (firstHitPosition - boundingBoxMax) / (boundingBoxMin - boundingBoxMax);
-        vec3 gradient = computeGradient(volume, normalizedPosition);
-        vec3 normal = normalize(gradient);
-
-        // Lighting calculations
-        /*
-        vec3 ambientColor = vec3(1.0, 1.0, 1.0); 
-        vec3 lightColor = vec3(1.0, 1.0, 1.0); 
-        vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0)); 
-        float diffuse = max(dot(normal, lightDir), 0.0); 
-        vec3 viewDir = normalize(transformedEye - firstHitPosition); 
-        vec3 reflectDir = reflect(-lightDir, normal); 
-        float specular = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
-
-        float textureValue = texture(volume, normalizedPosition).r;
-        vec3 colorFromTexture = vec3(textureValue);
-
-        vec3 ambient = ambientColor * colorFromTexture;
-        vec3 diffuseColor = lightColor * diffuse * colorFromTexture;
-        vec3 specularColor = lightColor * specular;
-        vec3 finalColor = ambient + diffuseColor + specularColor; 
-        fragColor = vec4(finalColor, firstHitOpacity) * vec4(firstHitColor, 1.0);
-        */
-
-        // simple lighting
-        vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0));
-        vec3 reflectDir = reflect(-lightDir, normal);
-        vec3 viewDir = normalize(transformedEye - firstHitPosition); 
-        float specular = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
-        float diffuse = max(dot(normal, lightDir), 0.0);
-        vec3 color = vec3(diffuse) + vec3(specular);
-        fragColor = vec4(color, firstHitOpacity) * vec4(firstHitColor, 1.0);
-        
-    } else {
-        fragColor = vec4(0.0, 0.0, 0.0, 1.0);
-    }
+    fragColor = accumulatedColor;
 }
 
