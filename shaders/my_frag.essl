@@ -18,6 +18,7 @@ uniform int numIsosurfaces;
 uniform float isoValues[3]; // maximum of 3 isosurfaces
 uniform vec3 isoColors[3];
 uniform float isoOpacities[3];
+uniform float sampling_rate;
 
 in vec3 rayDir;
 in vec3 transformedEye;
@@ -83,7 +84,7 @@ void main() {
     t_hit.x = max(t_hit.x, 0.0);
 
     // define step size multiplier. Higher is less accurate but more performant.
-    float dtMulti = 1.0;
+    float dtMulti = sampling_rate;
     // define step size for marching through volume
     vec3 dt_vec = 1.0 / (vec3(boundBox) * abs(rayDirection));
     float dt = min(dt_vec.x, min(dt_vec.y, dt_vec.z)) * dtMulti;

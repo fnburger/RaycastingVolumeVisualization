@@ -10,7 +10,7 @@ class MyShader extends Shader{
                                     new THREE.Vector3(0.9, 0.9, 0.9), // white bones
                                     new THREE.Vector3(1.0, 1.0, 1.0)]); // teeth
         this.setUniform("isoOpacities", [1.0, 1.0, 1.0]);
-
+        this.setUniform("sampling_rate", 1.0);
         //  we need a button to add and remove surfaces (max value is 3 because the array in the shader has size 3)
         this.setUniform("numIsosurfaces", 3); 
     }
@@ -25,6 +25,10 @@ class MyShader extends Shader{
 
     updateOpacity(opacities) {
         this.setUniform("isoOpacities", opacities);
+    }
+
+    updateSampling(rate) {
+        this.setUniform("sampling_rate", rate);
     }
     
 }

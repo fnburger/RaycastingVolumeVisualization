@@ -25,6 +25,7 @@ let myShader = null;
 let isoValues = [0.2, 0.5, 0.9];
 let colors = [new THREE.Vector3(1.0, 1.0, 1.0), new THREE.Vector3(0.0, 1.0, 0.6), new THREE.Vector3(1.0, 0.0, 0.6)];
 let opacities = [0.6, 0.8, 1.0];
+let sampling_rate = 1.0;
 
 /**
  * Load all data and initialize UI here.
@@ -245,6 +246,14 @@ function onColorChange(val, id) {
     if (myShader != null) {
         myShader.updateColor(colors);
         myShader.updateOpacity(opacities);
+        requestAnimationFrame(paint);
+    }
+}
+
+function onSamplingRateInput(val) {
+    sampling_rate = parseFloat(val);
+    if (myShader != null) {
+        myShader.updateSampling(sampling_rate);
         requestAnimationFrame(paint);
     }
 }
