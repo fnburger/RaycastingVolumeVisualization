@@ -50,16 +50,23 @@ vec3 newInterpolation(vec3 pos_current, vec3 pos_prev, int i, float value_curren
 
 // returns the gradient of the surface at the first-hit position
 vec3 computeGradient(sampler3D volume, vec3 texCoord) {
-    vec3 offset = vec3(1.0 / float(textureSize(volume, 0)));
+    // Calculate offset based on texture size
+    ivec3 texSize = textureSize(volume, 0);
+    vec3 offset = vec3(1.0 / float(texSize.x), 1.0 / float(texSize.y), 1.0 / float(texSize.z));
+
+    // Sample the volume texture at offset positions
     float valueX1 = texture(volume, texCoord + vec3(offset.x, 0.0, 0.0)).r;
     float valueX2 = texture(volume, texCoord - vec3(offset.x, 0.0, 0.0)).r;
     float valueY1 = texture(volume, texCoord + vec3(0.0, offset.y, 0.0)).r;
     float valueY2 = texture(volume, texCoord - vec3(0.0, offset.y, 0.0)).r;
     float valueZ1 = texture(volume, texCoord + vec3(0.0, 0.0, offset.z)).r;
     float valueZ2 = texture(volume, texCoord - vec3(0.0, 0.0, offset.z)).r;
+
+    // Compute the gradient
     vec3 gradient = vec3(valueX1 - valueX2, valueY1 - valueY2, valueZ1 - valueZ2);
     return gradient;
 }
+
 
 void main() {
     // ############# sampling the volume ##############
@@ -98,6 +105,19 @@ void main() {
       vec3 texCoord = (samplePos - boundingBoxMax) / ((boundingBoxMin - boundingBoxMax) * 1.0);
       // sample 3d texture 
       float alpha = texture(volume, texCoord).r;
+      /*
+      float interpVal = 0.0001;
+      float alpha1 = texture(volume, texCoord + vec3(interpVal)).r;
+      float alpha2 = texture(volume, texCoord - vec3(interpVal)).r;
+      float alpha3 = texture(volume, texCoord + vec3(-interpVal, interpVal, interpVal)).r;
+      float alpha4 = texture(volume, texCoord + vec3(interpVal, -interpVal, interpVal)).r;
+      float alpha5 = texture(volume, texCoord + vec3(interpVal, interpVal, -interpVal)).r;
+      alpha = mix(alpha, alpha1, 0.5);
+      alpha = mix(alpha, alpha2, 0.5);
+      alpha = mix(alpha, alpha3, 0.5);
+      alpha = mix(alpha, alpha4, 0.5);
+      alpha = mix(alpha, alpha5, 0.5);
+      */
 
       if (firstHitFound) {
             break; // this ray is done after its crossing of the ISO value was found
