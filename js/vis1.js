@@ -22,10 +22,10 @@ let fileInput = null;
 let testShader = null;
 
 let myShader = null;
-let isoValues = [0.2, 0.5, 0.9];
+let isoValues = [0.3, 0.5, 0.9];
 let colors = [new THREE.Vector3(0.55, 0.28, 0.18), new THREE.Vector3(0.9, 0.9, 0.9), new THREE.Vector3(1.0, 1.0, 1.0)];
-let opacities = [0.6, 0.8, 1.0];
-let sampling_rate = 1.0;
+let opacities = [0.8, 0.9, 1.0];
+let sampling_rate = 50.0;
 let number_surfaces = 1;
 
 /**
