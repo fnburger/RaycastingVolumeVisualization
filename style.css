@@ -29,9 +29,8 @@ body {
 }
 
 input[type="range"] {
-    width: 100%;
-    background: transparent; /* Hide the default slider track */
+    width: 290px;
     position: relative;
-    z-index: 1; /* Place above the fake track */
+    left: 35px;
 }
 
