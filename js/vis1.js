@@ -27,6 +27,7 @@ let colors = [new THREE.Vector3(0.55, 0.28, 0.18), new THREE.Vector3(0.9, 0.9, 0
 let opacities = [0.8, 0.9, 1.0];
 let sampling_rate = 50.0;
 let number_surfaces = 1;
+let ao = true;
 
 /**
  * Load all data and initialize UI here.
@@ -98,7 +99,7 @@ async function resetVis(){
         //texture3D.wrapS = texture3D.wrapT = texture3D.wrapR = THREE.RepeatWrapping;
         texture3D.unpackAligment = 1;
         texture3D.needsUpdate = true;
-        myShader = new MyShader(texture3D, camera.position, boundDim, canvasWidth, canvasHeight, number_surfaces, sampling_rate, opacities, colors, isoValues);
+        myShader = new MyShader(texture3D, camera.position, boundDim, canvasWidth, canvasHeight, number_surfaces, sampling_rate, opacities, colors, isoValues, ao);
         
         // ############## define histogram #################
         let oldHistogram = d3.select("svg");
@@ -285,6 +286,15 @@ function onRemoveSurfaceClick() {
         }
     } else {
         console.log("Cannot remove last iso surface or viewport will be empty.")
+    }
+}
+
+// checkbox action toggle ambient occlusion
+function onAOClick() {
+    ao = !ao;
+    if (myShader != null) {
+        myShader.updateAmbientOcclusion(ao);
+        requestAnimationFrame(paint);
     }
 }
 

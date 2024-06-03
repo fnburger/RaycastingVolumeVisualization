@@ -17,6 +17,7 @@ uniform float isoValues[3]; // maximum of 3 isosurfaces
 uniform vec3 isoColors[3];
 uniform float isoOpacities[3];
 uniform float sampling_rate;
+uniform bool ao;
 
 in vec3 rayDir;
 in vec3 transformedEye;
@@ -62,20 +63,17 @@ vec3 computeGradient(sampler3D volume, vec3 texCoord) {
 }
 
 // approximates ambient occlusion by sampling the density of the volume along the normal direction and using these samples to attenuate the diffuse lighting component
-float computeAmbientOcclusion(sampler3D volume, vec3 pos, vec3 normal, vec3 boundingBoxMin, vec3 boundingBoxMax, int numSamples) {
-    /*
+float computeAmbientOcclusion(sampler3D volume, vec3 pos, vec3 normal, vec3 boundingBoxMin, vec3 boundingBoxMax, float isoValue, int numSamples) {
     float occlusion = 0.0;
     float stepSize = 0.02;
     for (int i = 0; i < numSamples; i++) {
         vec3 samplePos = pos + normal * stepSize * float(i);
         vec3 sampleTexCoord = (samplePos - boundingBoxMin) / (boundingBoxMax - boundingBoxMin);
         float sampleValue = texture(volume, sampleTexCoord).r;
-        occlusion += sampleValue;
+        if (sampleValue == isoValue)
+            occlusion += sampleValue;
     }
-    return 1.0 - occlusion / float(numSamples);
-    */
-
-    return 1.0;
+    return 1.0 - occlusion;
 }
 
 
@@ -142,7 +140,9 @@ void main() {
                     diffuse = diffuse + max(dot(normal, lightDir1), 0.0); // second lightsource to reduce shadows
 
                     // Compute ambient occlusion
-                    float ambientOcclusion = computeAmbientOcclusion(volume, firstHitPosition, normal, boundingBoxMin, boundingBoxMax, 16);
+                    float ambientOcclusion = 1.0f;
+                    if (ao)
+                        ambientOcclusion = computeAmbientOcclusion(volume, firstHitPosition, normal, boundingBoxMin, boundingBoxMax, isoValues[i], 16);
                     vec3 color = isoColors[i] * diffuse * ambientOcclusion + vec3(specular);
 
                     // cumulative color and opacity so we can see all layers
