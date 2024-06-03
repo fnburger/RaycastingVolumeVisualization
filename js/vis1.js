@@ -288,6 +288,7 @@ function onRemoveSurfaceClick() {
     }
 }
 
+// helper function to toggle "hidden" status of sliders etc.
 function setEditorElementsVisibility(id, visible) {
     const iso_slider = document.getElementById("iso" + id);
     const color_picker = document.getElementById("col" + id);

@@ -5,6 +5,12 @@ Rotate the orbit camera around the bounding box using the left mouse button. Zoo
 
 **TODO: complete this section!** (how to use the editor etc.)
 
+## Interactive editor
+- Up to 3 iso surfaces can be visualized with independent opacities, iso values and colors.
+- Surfaces can be created and removed using the add and remove buttons.
+- Each surface has its own iso-slider, color-picker and opacity-slider.
+- The sampling rate can be adjusted by the user to adjust detail / performance using a slider.
+
 ## Framework Description
 
 This framework uses three.js and d3.js for volume rendering and setting the appearance, respectively. 

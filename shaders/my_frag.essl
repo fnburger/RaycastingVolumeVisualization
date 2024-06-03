@@ -128,11 +128,11 @@ void main() {
                 float prevAlpha = texture(volume, prevTexCoord).r;
 
                 if (prevAlpha < isoValues[i]) {
-                    firstHitPosition = newInterpolation(samplePos, prevSamplePos, i, alpha, prevAlpha);
+                    firstHitPosition = newInterpolation(samplePos, prevSamplePos, i, alpha, prevAlpha); // interpolate actual 3d pos between steps
                     vec3 normalizedPosition = (firstHitPosition - boundingBoxMin) / (boundingBoxMax - boundingBoxMin);
                     vec3 gradient = computeGradient(volume, normalizedPosition);
                     vec3 normal = normalize(gradient);
-                    
+                    // use gradient as normal for shading
                     vec3 lightDir = normalize(vec3(-1.0, 1.0, 1.0));
                     vec3 lightDir1 = normalize(vec3(1.0, 1.0, 1.0));
                     vec3 reflectDir = reflect(-lightDir, normal);
@@ -152,14 +152,12 @@ void main() {
 
                     if (accumulatedOpacity >= 1.0) {
                         fragColor = accumulatedColor;
-                        return;
+                        return; // we can return because we would not be able to see anything behind a frag with opacity = 1
                     }
                     break;
                 }
             }
         }
     }
-
     fragColor = accumulatedColor;
 }
-
