@@ -120,6 +120,12 @@ void main() {
 
         // first-hit compositing with transfer function: check for each voxel against multiple iso values
         for (int i = 0; i < numIsosurfaces; i++) {
+            // dynamically adjust step-size (clamped)
+            dt = abs(isoValues[i] - alpha) * sampling_rate; // bigger steps if further away
+            if(dt < 0.01) dt = 0.01;
+            if(dt > 0.5) dt = 0.5;
+
+            // found surface?
             if (alpha >= isoValues[i]) {
                 vec3 prevSamplePos = samplePos - rayDirection * dt;
                 vec3 prevTexCoord = (prevSamplePos - boundingBoxMin) / ((boundingBoxMax - boundingBoxMin) * 1.0);
