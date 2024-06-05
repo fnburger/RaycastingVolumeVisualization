@@ -71,7 +71,7 @@ float computeAmbientOcclusion(sampler3D volume, vec3 pos, vec3 normal, vec3 boun
         vec3 samplePos = pos + normal * stepSize * float(i);
         vec3 sampleTexCoord = (samplePos - boundingBoxMin) / (boundingBoxMax - boundingBoxMin);
         float sampleValue = texture(volume, sampleTexCoord).r;
-        if (sampleValue == isoValue)
+        if (abs(sampleValue - isoValue) < 0.0001)
             occlusion += sampleValue;
     }
     return 1.0 - occlusion;
