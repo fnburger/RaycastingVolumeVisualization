@@ -1,5 +1,5 @@
 class MyShader extends Shader{
-    constructor(material, cameraPos, boundDim, width, height, surfaces, samplingRate, opacities, colors, isos, ao){
+    constructor(material, cameraPos, boundDim, width, height, surfaces, samplingRate, opacities, colors, isos, ao, camDir){
         super("my_vert", "my_frag");
         this.setUniform("cameraPos", cameraPos);
         this.setUniform("boundBox", boundDim);
@@ -12,6 +12,7 @@ class MyShader extends Shader{
         //  we need a button to add and remove surfaces (max value is 3 because the array in the shader has size 3)
         this.setUniform("numIsosurfaces", surfaces); 
         this.setUniform("ao", ao);
+        this.setUniform("camDir", camDir);
     }
 
     updateISO(isoValues) {
@@ -36,6 +37,10 @@ class MyShader extends Shader{
 
     updateAmbientOcclusion(ao) {
         this.setUniform("ao", ao);
+    }
+
+    updateCamDir(val){
+        this.setUniform("camDir", val);
     }
     
 }

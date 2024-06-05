@@ -28,6 +28,7 @@ let opacities = [0.8, 0.9, 1.0];
 let sampling_rate = 10.0;
 let number_surfaces = 1;
 let ao = true;
+let cameraDirection = new THREE.Vector3();
 
 /**
  * Load all data and initialize UI here.
@@ -99,7 +100,7 @@ async function resetVis(){
         //texture3D.wrapS = texture3D.wrapT = texture3D.wrapR = THREE.RepeatWrapping;
         texture3D.unpackAligment = 1;
         texture3D.needsUpdate = true;
-        myShader = new MyShader(texture3D, camera.position, boundDim, canvasWidth, canvasHeight, number_surfaces, sampling_rate, opacities, colors, isoValues, ao);
+        myShader = new MyShader(texture3D, camera.position, boundDim, canvasWidth, canvasHeight, number_surfaces, sampling_rate, opacities, colors, isoValues, ao, cameraDirection);
         
         // ############## define histogram #################
         let oldHistogram = d3.select("svg");
@@ -320,7 +321,8 @@ function setEditorElementsVisibility(id, visible) {
  */
 function paint(){
     if (volume) {
-
+        camera.getWorldDirection(cameraDirection);
+        myShader.setUniform("camDir", cameraDirection);
         renderer.render(scene, camera);
     }
 }

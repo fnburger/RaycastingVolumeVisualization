@@ -10,6 +10,7 @@ uniform vec3 boundBox;
 uniform sampler3D volume;
 uniform vec2 resolution;
 uniform float u_isoValue;
+uniform vec3 camDir;
 
 // transfer function uniforms
 uniform int numIsosurfaces;
@@ -94,8 +95,10 @@ void main() {
     // define step size multiplier. Higher is less accurate but more performant.
     float dtMulti = sampling_rate;
     // define step size for marching through volume
+    vec3 camDirNorm = normalize(camDir);
+    float difference = 1.0 / dot(camDirNorm, rayDirection) + sampling_rate;
     vec3 dt_vec = 1.0 / (vec3(boundBox) * abs(rayDirection));
-    float dt = min(dt_vec.x, min(dt_vec.y, dt_vec.z)) * dtMulti;
+    float dt = min(dt_vec.x, min(dt_vec.y, dt_vec.z)) * difference;
     
     // define bounds
     vec3 boundingBoxMin = vec3(-boundBox.x / 2.0, -boundBox.y / 2.0, -boundBox.z / 2.0);
@@ -120,10 +123,18 @@ void main() {
 
         // first-hit compositing with transfer function: check for each voxel against multiple iso values
         for (int i = 0; i < numIsosurfaces; i++) {
+            
+            
+
             // dynamically adjust step-size (clamped)
-            dt = abs(isoValues[i] - alpha) * sampling_rate; // bigger steps if further away
-            if(dt < 0.01) dt = 0.01;
-            if(dt > 0.5) dt = 0.5;
+            //vec3 baseLine = normalize(transformedEye - vec3(transformedEye.x, transformedEye.y, boundBox.z));
+            //float difference = dot(rayDirection, baseLine); // is bigger if vectors are similar
+            // make step size smaller if vectors are not similar
+            //dt = 1 / difference * sampling_rate;
+
+            //dt = abs(isoValues[i] - alpha) * sampling_rate; // bigger steps if further away
+            //if(dt < 0.01) dt = 0.01;
+            //if(dt > 0.5) dt = 0.5;
 
             // found surface?
             if (alpha >= isoValues[i]) {
