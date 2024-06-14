@@ -96,7 +96,7 @@ void main() {
     float dtMulti = sampling_rate;
     // define step size for marching through volume
     vec3 camDirNorm = normalize(camDir);
-    float difference = 1.0 / dot(camDirNorm, rayDirection) + sampling_rate;
+    float difference = dot(camDirNorm, rayDirection) * sampling_rate + 1.0f;
     vec3 dt_vec = 1.0 / (vec3(boundBox) * abs(rayDirection));
     float dt = min(dt_vec.x, min(dt_vec.y, dt_vec.z)) * difference;
     
@@ -111,13 +111,13 @@ void main() {
     float accumulatedOpacity = 0.0;
 
     for (float t = t_hit.x; t < t_hit.y; t += dt) {
-      // compute position in volume to sample
-      vec3 samplePos = rayOrigin + rayDirection * t; // changed p to rayOrigin
-      vec3 texCoord = (samplePos - boundingBoxMin) / ((boundingBoxMax - boundingBoxMin) * 1.0);
-      float alpha = texture(volume, texCoord).r; // sample 3d texture 
+        // compute position in volume to sample
+        vec3 samplePos = rayOrigin + rayDirection * t; // changed p to rayOrigin
+        vec3 texCoord = (samplePos - boundingBoxMin) / ((boundingBoxMax - boundingBoxMin) * 1.0);
+        float alpha = texture(volume, texCoord).r; // sample 3d texture 
      
 
-      if (firstHitFound) {
+        if (firstHitFound) {
             break; // this ray is done after its crossing of the ISO value was found
         }
 
@@ -171,6 +171,7 @@ void main() {
                         fragColor = accumulatedColor;
                         return; // we can return because we would not be able to see anything behind a frag with opacity = 1
                     }
+                    firstHitFound = true;
                     break;
                 }
             }
